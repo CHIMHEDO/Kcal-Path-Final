@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Calorie Tracker</title>
+</head>
+<body>
+
+    <h1>แผงควบคุม (Dashboard)</h1>
+    <button id="logoutBtn">ออกจากระบบ</button>
+    <hr>
+
+    <h2>👤 ข้อมูลของคุณ: <span id="userNameShow">กำลังโหลด...</span></h2>
+    <p>น้ำหนัก: <span id="userWeight">-</span> กก. | ส่วนสูง: <span id="userHeight">-</span> ซม.</p>
+    <hr>
+
+    <h2>📊 สรุปแคลอรี่วันนี้ (<span id="todayDate"></span>)</h2>
+    <p>🔥 แคลอรี่รวม: <b><span id="totalCalories">0</span> kcal</b></p>
+    <p>🥩 โปรตีน: <span id="totalProtein">0</span> g | 🍚 คาร์บ: <span id="totalCarbs">0</span> g | 🥑 ไขมัน: <span id="totalFat">0</span> g</p>
+
+    <h3>รายการอาหารที่กินวันนี้:</h3>
+    <ul id="foodList">
+        <li>กำลังโหลดข้อมูล...</li>
+    </ul>
+
+    <hr>
+    <a href="add-food.html"><button>+ บันทึกมื้ออาหารใหม่</button></a>
+
+
+    <script>
+        // 1. เช็คก่อนว่า "ล็อกอินหรือยัง?" (ตรวจสอบกระเป๋าเป้ localStorage)
+        const userId = localStorage.getItem('userId');
+        
+        if (!userId) {
+            // ถ้าไม่มี userId แปลว่าแอบเข้าหน้านี้โดยไม่ได้ล็อกอิน -> เตะกลับไปหน้าแรก!
+            alert('กรุณาเข้าสู่ระบบก่อนครับ 🛑');
+            window.location.href = 'index.html';
+        }
+
+        // 2. ฟังก์ชันออกจากระบบ (เคลียร์กระเป๋าเป้ทิ้ง แล้วกลับไปหน้า Login)
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.clear(); 
+            window.location.href = 'index.html';
+        });
+
+        // 3. ดึงข้อมูลส่วนตัว (เรียก API /users/:id)
+        async function fetchProfile() {
+            try {
+                const response = await fetch(`http://localhost:3000/users/${userId}`);
+                const userData = await response.json();
+
+                // เอาข้อมูลไปแปะตามจุดต่างๆ ใน HTML
+                document.getElementById('userNameShow').innerText = userData.username;
+                document.getElementById('userWeight').innerText = userData.weight || '-';
+                document.getElementById('userHeight').innerText = userData.height || '-';
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // 4. ดึงข้อมูลสรุปการกินวันนี้ (เรียก API /daily-summary)
+        async function fetchDailySummary() {
+            // หาวันที่ของวันนี้ในรูปแบบ YYYY-MM-DD
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('todayDate').innerText = today;
+
+            try {
+                const response = await fetch(`http://localhost:3000/daily-summary/${userId}/${today}`);
+                const data = await response.json();
+
+                if (response.ok && data.summary) {
+                    // แปะข้อมูลสรุปตัวเลข
+                    document.getElementById('totalCalories').innerText = data.summary.total_calories;
+                    document.getElementById('totalProtein').innerText = data.summary.total_protein;
+                    document.getElementById('totalCarbs').innerText = data.summary.total_carbs;
+                    document.getElementById('totalFat').innerText = data.summary.total_fat;
+
+                    // สร้างรายการอาหารย่อยๆ (List)
+                    const foodList = document.getElementById('foodList');
+                    foodList.innerHTML = ''; // ล้างข้อความ "กำลังโหลด..." ทิ้ง
+
+                    if (data.logs.length === 0) {
+                        foodList.innerHTML = '<li>ยังไม่ได้บันทึกอาหารเลย เริ่มกินได้แล้ว! 😋</li>';
+                    } else {
+                        data.logs.forEach(log => {
+                            const li = document.createElement('li');
+                            li.innerText = `[${log.meal_type}] ${log.food_name} - ${log.total_calories} kcal (จำนวน: ${log.quantity})`;
+                            foodList.appendChild(li);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // สั่งให้ 2 ฟังก์ชันนี้ทำงานทันทีที่เปิดหน้านี้ขึ้นมา
+        fetchProfile();
+        fetchDailySummary();
+    </script>
+</body>
+</html>

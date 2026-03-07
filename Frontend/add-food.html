@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บันทึกมื้ออาหาร - Calorie Tracker</title>
+</head>
+<body>
+
+    <h2>➕ บันทึกมื้ออาหาร</h2>
+    
+    <form id="addFoodForm">
+        <div>
+            <label>เลือกเมนูอาหาร:</label><br>
+            <select id="foodSelect" required>
+                <option value="">กำลังโหลดรายการอาหาร...</option>
+            </select>
+        </div>
+        <br>
+        
+        <div>
+            <label>ปริมาณ (จาน/ชิ้น/แก้ว):</label><br>
+            <input type="number" id="quantity" step="0.1" value="1" min="0.1" required>
+        </div>
+        <br>
+        
+        <div>
+            <label>มื้ออาหาร:</label><br>
+            <select id="mealType" required>
+                <option value="breakfast">มื้อเช้า</option>
+                <option value="lunch">มื้อเที่ยง</option>
+                <option value="dinner">มื้อเย็น</option>
+                <option value="snack">ของว่าง</option>
+            </select>
+        </div>
+        <br>
+        
+        <button type="submit">💾 บันทึกข้อมูลลงสมุด</button>
+    </form>
+
+    <br><hr>
+    <a href="dashboard.html"><button>⬅️ กลับไปหน้า Dashboard</button></a>
+
+
+    <script>
+        // 1. เช็คสิทธิ์ก่อนเข้าใช้งาน (ต้อง Login แล้วเท่านั้น)
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+            alert('กรุณาเข้าสู่ระบบก่อนครับ 🛑');
+            window.location.href = 'index.html';
+        }
+
+        // 2. ฟังก์ชันโหลดรายชื่ออาหารมาใส่ใน Dropdown
+        async function loadFoods() {
+            try {
+                // วิ่งไปขอเมนูอาหารทั้งหมดจาก Backend
+                const response = await fetch('http://localhost:3000/foods');
+                const foods = await response.json();
+                const foodSelect = document.getElementById('foodSelect');
+                
+                // ล้างข้อความ "กำลังโหลด..." ทิ้ง แล้วใส่ตัวเลือกแรก
+                foodSelect.innerHTML = '<option value="">-- กรุณาเลือกอาหาร --</option>';
+                
+                // เอาเมนูอาหารที่ได้มา วนลูปสร้างเป็นตัวเลือก <option>
+                foods.forEach(food => {
+                    const option = document.createElement('option');
+                    option.value = food.id; // เวลาส่งไป Backend เราจะส่งแค่ ID
+                    option.innerText = `${food.name} (${food.calories} kcal)`; // แต่เวลาโชว์ให้คนดู โชว์ชื่อกับแคลอรี่
+                    foodSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading foods:', error);
+                document.getElementById('foodSelect').innerHTML = '<option value="">โหลดข้อมูลไม่สำเร็จ</option>';
+            }
+        }
+
+        // 3. จัดการตอนผู้ใช้กดปุ่ม "บันทึกข้อมูล"
+        document.getElementById('addFoodForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // เบรกไม่ให้หน้าเว็บกระพริบ
+            
+            // ดึงข้อมูลจากฟอร์ม
+            const foodId = document.getElementById('foodSelect').value;
+            const quantity = document.getElementById('quantity').value;
+            const mealType = document.getElementById('mealType').value;
+            
+            // หาวันที่ปัจจุบัน (เช่น 2026-03-07)
+            const today = new Date().toISOString().split('T')[0];
+
+            try {
+                // ส่งข้อมูลไปบันทึกที่ Backend
+                const response = await fetch('http://localhost:3000/food-logs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId, // ดึงจากกระเป๋าเป้ localStorage
+                        food_id: foodId,
+                        quantity: quantity,
+                        meal_type: mealType,
+                        log_date: today
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('บันทึกมื้ออาหารสำเร็จ! 😋');
+                    // บันทึกเสร็จแล้ว ให้เด้งกลับไปดูผลงานที่หน้า Dashboard
+                    window.location.href = 'dashboard.html'; 
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+            }
+        });
+
+        // สั่งให้โหลดรายชื่ออาหารทันทีที่เปิดหน้านี้
+        loadFoods();
+    </script>
+</body>
+</html>
