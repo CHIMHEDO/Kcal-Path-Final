@@ -1,65 +1,89 @@
 <template>
-  <div class="add-food-container">
-    <h1> บันทึกมื้ออาหาร</h1>
-    <p>เพิ่มรายการอาหารที่คุณกินในวันนี้</p>
+  <div class="add-food-wrapper">
+    <video autoplay loop muted playsinline class="video-bg">
+      <source src="@/assets/images/เมนู.mp4" type="video/mp4" />
+    </video>
 
-    <div class="form-group">
-      <label>วันที่:</label>
-      <input type="date" v-model="logDate">
-    </div>
+    <div class="overlay"></div>
 
-    <div class="form-group">
-      <label>มื้ออาหาร:</label>
-      <select v-model="mealType">
-        <option value="breakfast">มื้อเช้า</option>
-        <option value="lunch">มื้อเที่ยง</option>
-        <option value="dinner">มื้อเย็น</option>
-        <option value="snack">ของว่าง</option>
-      </select>
-    </div>
+    <div class="add-food-container glass-card">
+      <h1 class="premium-title">บันทึกมื้ออาหาร 🍽️</h1>
+      <p class="subtitle">เพิ่มรายการอาหารที่คุณทานในวันนี้</p>
 
-    <div class="form-group">
-      <label>ค้นหาและเลือกอาหาร:</label>
-
-      <div v-if="!selectedFood">
-        <input 
-          type="text" 
-          v-model="searchQuery" 
-          placeholder=" พิมพ์ชื่ออาหารเพื่อค้นหา..." 
-          class="search-input"
-        >
-        
-        <ul class="search-results" v-if="searchQuery.trim() !== ''">
-          <li v-if="filteredFoods.length === 0" class="no-result">
-            ❌ ไม่พบอาหารที่ค้นหา
-          </li>
-          <li 
-            v-for="food in filteredFoods" 
-            :key="food.id" 
-            @click="selectFood(food)"
-          >
-            <b>{{ food.name }}</b> <span class="cal-badge">{{ food.calories }} kcal</span>
-          </li>
-        </ul>
-      </div>
-
-      <div v-else class="selected-food-box">
-        <div>
-          <p style="margin: 0; font-weight: bold; color: #2e7d32;">✅ {{ selectedFood.name }}</p>
-          <p style="margin: 0; font-size: 0.9em; color: #555;">{{ selectedFood.calories }} kcal</p>
+      <div class="form-section glass-inner-card">
+        <div class="row">
+          <div class="form-group half">
+            <label>วันที่</label>
+            <input type="date" v-model="logDate" class="glass-input">
+          </div>
+          <div class="form-group half">
+            <label>มื้ออาหาร</label>
+            <select v-model="mealType" class="glass-input">
+              <option value="breakfast" class="dark-option">มื้อเช้า</option>
+              <option value="lunch" class="dark-option">มื้อเที่ยง</option>
+              <option value="dinner" class="dark-option">มื้อเย็น</option>
+              <option value="snack" class="dark-option">ของว่าง</option>
+            </select>
+          </div>
         </div>
-        <button @click="clearSelection" class="btn-clear">เปลี่ยนอาหาร</button>
       </div>
-    </div>
 
-    <div class="form-group">
-      <label>จำนวน (จาน/ชิ้น):</label>
-      <input type="number" v-model="quantity" step="0.5" min="0.1">
-    </div>
+      <div class="form-section glass-inner-card">
+        <div class="form-group">
+          <label class="text-accent">ค้นหาและเลือกอาหาร</label>
 
-    <div class="button-group">
-      <button @click="submitFoodLog" class="btn-submit">💾 บันทึกข้อมูล</button>
-      <button @click="goBack" class="btn-cancel">❌ ยกเลิก</button>
+          <div v-if="!selectedFood" class="search-container">
+            <div class="input-with-icon">
+              <span class="search-icon">🔍</span>
+              <input 
+                type="text" 
+                v-model="searchQuery" 
+                placeholder="พิมพ์ชื่ออาหารเพื่อค้นหา..." 
+                class="glass-input search-input"
+              >
+            </div>
+            
+            <ul class="search-results glass-list" v-if="searchQuery.trim() !== ''">
+              <li v-if="filteredFoods.length === 0" class="no-result">
+                ❌ ไม่พบอาหารที่ค้นหา
+              </li>
+              <li 
+                v-for="food in filteredFoods" 
+                :key="food.id" 
+                @click="selectFood(food)"
+                class="glass-list-item"
+              >
+                <span class="food-name">{{ food.name }}</span> 
+                <span class="cal-badge">{{ food.calories }} kcal</span>
+              </li>
+            </ul>
+          </div>
+
+          <div v-else class="selected-food-box">
+            <div class="selected-info">
+              <span class="check-icon">✨</span>
+              <div>
+                <p class="selected-name">{{ selectedFood.name }}</p>
+                <p class="selected-cal">{{ selectedFood.calories }} kcal</p>
+              </div>
+            </div>
+            <button @click="clearSelection" class="btn-clear">เปลี่ยน</button>
+          </div>
+        </div>
+
+        <div class="form-group highlight-box">
+          <label>จำนวน (จาน/ชิ้น)</label>
+          <div class="quantity-wrapper">
+            <input type="number" v-model="quantity" step="0.5" min="0.1" class="glass-input quantity-input">
+            <span class="unit-text">หน่วย</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button @click="submitFoodLog" class="premium-btn btn-submit">💾 บันทึกข้อมูล</button>
+        <button @click="goBack" class="glass-btn btn-cancel">❌ ยกเลิก</button>
+      </div>
     </div>
   </div>
 </template>
@@ -71,7 +95,7 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const logDate = ref(new Date().toLocaleDateString('sv-SE')) 
-const mealType = ref('มื้อเช้า')
+const mealType = ref('breakfast') // เปลี่ยนค่าตั้งต้นให้ตรงกับ value ใน <option>
 const quantity = ref(1)
 
 const foods = ref([])
@@ -79,7 +103,6 @@ const searchQuery = ref('')
 const selectedFoodId = ref('')
 const selectedFood = ref(null) 
 
-// 1. ดึงข้อมูลอาหารทั้งหมดมารอไว้หลังบ้าน
 const fetchFoods = async () => {
   try {
     const response = await fetch('http://localhost:3000/foods')
@@ -91,78 +114,64 @@ const fetchFoods = async () => {
   }
 }
 
-// 2. ฟังก์ชันกรองอาหาร (แก้ไขให้ตอนยังไม่พิมพ์ คืนค่าว่างกลับไปแทน)
 const filteredFoods = computed(() => {
-  // ถ้าช่องค้นหาว่างเปล่า (หรือมีแค่ช่องว่าง) ให้คืนค่าเป็น Array ว่างๆ ไปเลย
-  if (!searchQuery.value.trim()) {
-    return [] 
-  }
-  // ถ้ามีการพิมพ์ค้นหา ให้กรองเอาเฉพาะชื่ออาหารที่มีคำนั้นๆ อยู่
+  if (!searchQuery.value.trim()) return [] 
   return foods.value.filter(food => 
     food.name.toLowerCase().includes(searchQuery.value.trim().toLowerCase())
   )
 })
 
-// 3. ฟังก์ชันเมื่อผู้ใช้คลิกเลือกอาหารจากลิสต์
 const selectFood = (food) => {
   selectedFoodId.value = food.id
   selectedFood.value = food
   searchQuery.value = '' 
 }
 
-// 4. ฟังก์ชันกดยกเลิกการเลือกอาหาร (เพื่อค้นหาใหม่)
 const clearSelection = () => {
   selectedFoodId.value = ''
   selectedFood.value = null
 }
 
-// 5. ส่งข้อมูลไปบันทึก (เวอร์ชันเปิดโปง Error)
 const submitFoodLog = async () => {
   const userId = localStorage.getItem('userId')
 
-  // เช็คก่อนว่ามีไอดีคนล็อกอินอยู่ไหม (ป้องกันกรณี Session หลุด)
   if (!userId) {
-    alert('ไม่พบข้อมูลผู้ใช้ กรุณาล็อกอินใหม่อีกครั้งครับ');
-    router.push('/login');
-    return;
+    alert('ไม่พบข้อมูลผู้ใช้ กรุณาล็อกอินใหม่อีกครั้งครับ')
+    router.push('/login')
+    return
   }
 
   if (!selectedFoodId.value) {
-    alert('กรุณาเลือกอาหารก่อนครับ!');
-    return;
+    alert('กรุณาเลือกอาหารก่อนครับ!')
+    return
   }
 
-  // แพ็กของเตรียมส่ง (แอบปริ้นท์ดูใน Console ว่ามีอะไรผิดปกติไหม)
   const payload = {
     user_id: userId,
     food_id: selectedFoodId.value,
     quantity: quantity.value,
     meal_type: mealType.value,
     log_date: logDate.value
-  };
-  console.log("📦 ข้อมูลที่กำลังจะส่งไปหลังบ้าน:", payload); 
+  }
 
   try {
     const response = await fetch('http://localhost:3000/food-logs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    });
+    })
 
-    // แกะกล่องข้อความที่หลังบ้านตอบกลับมา
-    const data = await response.json(); 
+    const data = await response.json() 
 
     if (response.ok) {
-      alert('บันทึกมื้ออาหารเรียบร้อย! 😋');
-      router.push('/dashboard');
+      alert('บันทึกมื้ออาหารเรียบร้อย! 😋')
+      router.push('/dashboard')
     } else {
-      // โชว์ Error ตัวจริงที่ส่งมาจาก server.js เลย!
-      alert(`❌ บันทึกไม่สำเร็จ: ${data.error}`); 
-      console.error("Backend Error Details:", data);
+      alert(`❌ บันทึกไม่สำเร็จ: ${data.error}`) 
     }
   } catch (error) {
-    console.error('Error:', error);
-    alert('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้');
+    console.error('Error:', error)
+    alert('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้')
   }
 }
 
@@ -176,114 +185,164 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.add-food-container {
-  max-width: 500px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+/* 🎨 --- พื้นหลัง --- */
+.add-food-wrapper {
+  min-height: 100vh;
+  position: relative;
+  font-family: 'Prompt', sans-serif;
+  color: #f8fafc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
-.form-group {
-  margin-bottom: 15px;
+
+.video-bg {
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100vw; 
+  height: 100vh;
+  object-fit: cover; 
+  z-index: 0; 
+  opacity: 0.6; /* ปรับความสว่าง-มืด ของวิดีโอได้ตรงนี้ */
+}
+
+.overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.447); 
+  z-index: 1;
+}
+
+/* 🎨 --- คอนเทนเนอร์หลัก --- */
+.add-food-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 550px;
+  text-align: center;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 40px 35px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.05);
+}
+
+.premium-title { margin-top: 0; color: #ffffff; font-weight: 400; font-size: 2em; margin-bottom: 5px; }
+.subtitle { color: #cbd5e1; margin-bottom: 30px; font-weight: 300; }
+
+.glass-inner-card {
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 0 20px 0;
+  margin-bottom: 20px;
   text-align: left;
 }
-label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 5px;
+
+.form-group { margin-bottom: 18px; text-align: left; }
+.row { display: flex; gap: 15px; }
+.half { flex: 1; }
+
+label { display: block; font-weight: 300; margin-bottom: 8px; color: #e2e8f0; font-size: 0.9em; }
+.text-accent { color: #d4af37; font-weight: 400; }
+
+/* 🎨 --- Input Fields --- */
+.glass-input {
+  width: 100%; padding: 12px 15px; box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white; border-radius: 12px; font-size: 1em; font-family: 'Prompt', sans-serif;
+  font-weight: 300; outline: none; transition: all 0.3s ease; color-scheme: dark; 
 }
-input, select {
-  width: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
+.glass-input:focus {
+  border-color: #d4af37; background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+}
+.dark-option { background-color: #1e293b; color: #fff; }
+
+/* 🎨 --- ช่องค้นหาอาหาร --- */
+.search-container { position: relative; }
+.input-with-icon { position: relative; }
+.search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 1.2em; opacity: 0.7; }
+.search-input { padding-left: 45px; }
+
+.glass-list {
+  list-style: none; padding: 0; margin: 10px 0 0 0;
+  max-height: 200px; overflow-y: auto;
+  background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px;
+  position: absolute; width: 100%; z-index: 10;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 
-.search-input {
-  border: 2px solid #4CAF50;
-  outline: none;
-}
-.search-results {
-  list-style: none;
-  padding: 0;
-  margin: 5px 0 0 0;
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: #fafafa;
-}
-.search-results li {
-  padding: 10px 15px;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: background-color 0.2s;
-}
-.search-results li:hover {
-  background-color: #e8f5e9;
-}
-.no-result {
-  text-align: center;
-  color: #888;
-  cursor: default !important;
-}
-.cal-badge {
-  background-color: #ffb74d;
-  color: white;
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 0.85em;
-}
+/* Custom Scrollbar สำหรับกล่องค้นหา */
+.glass-list::-webkit-scrollbar { width: 6px; }
+.glass-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+.glass-list::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.5); border-radius: 10px; }
 
+.glass-list-item {
+  padding: 12px 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+  transition: all 0.2s;
+}
+.glass-list-item:hover { background: rgba(212, 175, 55, 0.15); padding-left: 20px; }
+.glass-list-item:last-child { border-bottom: none; }
+
+.no-result { text-align: center; color: #94a3b8; padding: 15px; cursor: default !important; }
+.food-name { color: #f8fafc; font-weight: 400; }
+.cal-badge { background: rgba(212, 175, 55, 0.2); border: 1px solid #d4af37; color: #f3e5ab; padding: 4px 10px; border-radius: 20px; font-size: 0.85em; }
+
+/* 🎨 --- กล่องอาหารที่เลือกแล้ว --- */
 .selected-food-box {
-  background-color: #e8f5e9;
-  border: 2px solid #4CAF50;
-  padding: 15px;
-  border-radius: 5px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: rgba(46, 125, 50, 0.15); /* เขียวหรูหรา */
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  padding: 15px 20px; border-radius: 12px;
+  display: flex; justify-content: space-between; align-items: center;
+  box-shadow: inset 0 0 15px rgba(76, 175, 80, 0.05);
 }
-.btn-clear {
-  background-color: #ff9800;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-}
+.selected-info { display: flex; align-items: center; gap: 15px; }
+.check-icon { font-size: 1.5em; }
+.selected-name { margin: 0; font-weight: 500; color: #81c784; font-size: 1.1em; }
+.selected-cal { margin: 0; font-size: 0.9em; color: #cbd5e1; font-weight: 300; }
 
-.button-group {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
+.btn-clear {
+  background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+  transition: 0.3s; font-family: 'Prompt'; font-size: 0.85em;
 }
-.btn-submit {
-  flex: 1;
-  background-color: #4CAF50;
-  color: white;
-  padding: 12px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
+.btn-clear:hover { background: rgba(255, 255, 255, 0.2); color: #ffb74d; }
+
+/* 🎨 --- จำนวน --- */
+.highlight-box { margin-top: 25px; }
+.quantity-wrapper { position: relative; display: flex; align-items: center; }
+.quantity-input { padding-right: 60px; font-size: 1.1em; }
+.unit-text { position: absolute; right: 15px; color: #94a3b8; font-weight: 300; }
+
+/* 🎨 --- ปุ่มกด --- */
+.button-group { display: flex; gap: 15px; margin-top: 30px; }
+.premium-btn {
+  flex: 2; padding: 14px; background: linear-gradient(135deg, #d4af37, #b58d22);
+  color: #fff; border: none; border-radius: 12px; font-size: 1.1em; font-weight: 500;
+  cursor: pointer; transition: all 0.4s ease; font-family: 'Prompt', sans-serif;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
 }
-.btn-submit:hover { background-color: #45a049; }
-.btn-cancel {
-  flex: 1;
-  background-color: #f44336;
-  color: white;
-  padding: 12px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
+.premium-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5); background: linear-gradient(135deg, #e6c55d, #c59b27); }
+
+.glass-btn {
+  flex: 1; padding: 14px; background: rgba(255, 59, 48, 0.1);
+  color: #ff6b6b; border: 1px solid rgba(255, 59, 48, 0.3); border-radius: 12px;
+  font-size: 1.1em; cursor: pointer; transition: all 0.3s ease; font-family: 'Prompt', sans-serif;
 }
-.btn-cancel:hover { background-color: #da190b; }
+.glass-btn:hover { background: rgba(255, 59, 48, 0.2); color: #ff4d4d; }
+
+@media (max-width: 600px) {
+  .row { flex-direction: column; gap: 0; }
+  .glass-card { padding: 30px 20px; }
+  .button-group { flex-direction: column; }
+}
 </style>
