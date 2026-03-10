@@ -3,8 +3,13 @@
     <nav class="sticky-nav">
       <div class="logo">🥗 Kcal-Path</div>
       <div class="nav-buttons">
-        <button @click="goTo('/login')" class="btn-login">เข้าสู่ระบบ</button>
-        <button @click="goTo('/register')" class="btn-register">สมัครสมาชิก</button>
+        <template v-if="!isLoggedIn">
+          <button @click="goTo('/login')" class="btn-login">เข้าสู่ระบบ</button>
+          <button @click="goTo('/register')" class="btn-register">สมัครสมาชิก</button>
+        </template>
+        <template v-else>
+          <button @click="goTo('/dashboard')" class="btn-register">เข้าสู่แดชบอร์ด 📊</button>
+        </template>
       </div>
     </nav>
 
@@ -14,7 +19,9 @@
         <div class="content hero-content">
           <h1 class="bounce-in">รู้หรือเปล่า?</h1>
           <p class="subtitle">การกินที่ดี ไม่ใช่การอด <br>แต่คือการ <b>"เลือกกินให้เป็น"</b></p>
-          <button @click="goTo('/register')" class="cta-button">เริ่มเปลี่ยนตัวเองวันนี้ 🚀</button>
+          <button @click="isLoggedIn ? goTo('/dashboard') : goTo('/register')" class="cta-button">
+            {{ isLoggedIn ? 'ดูบันทึกอาหารของคุณ 🚀' : 'เริ่มเปลี่ยนตัวเองวันนี้ ' }}
+          </button>
           <p class="scroll-hint">เลื่อนลงเพื่อค้นพบความลับของอาหาร 👇</p>
         </div>
       </section>
@@ -33,14 +40,11 @@
         </div>
       </section>
 
-<section class="screen category-section carbs-section">
-        
+      <section class="screen category-section carbs-section">
         <video autoplay loop muted playsinline class="bg-video">
           <source src="@/assets/images/ขนมปัง.mp4" type="video/mp4" />
         </video>
-
         <div class="overlay"></div>
-        
         <div class="content full-screen-content">
           <h2>🍚 หมู่ที่ 2: คาร์บ (Carbohydrates)</h2>
           <p class="fact">"อย่ากลัวคาร์บ! นี่คือแหล่งพลังงานหลักของสมอง แค่เลือก 'คาร์บเชิงซ้อน' ก็หุ่นดีได้"</p>
@@ -53,14 +57,11 @@
         </div>
       </section>
 
-<section class="screen category-section fat-section">
-        
+      <section class="screen category-section fat-section">
         <video autoplay loop muted playsinline class="bg-video">
           <source src="@/assets/images/ไขมันดี.mp4" type="video/mp4" />
         </video>
-
         <div class="overlay"></div>
-        
         <div class="content full-screen-content">
           <h2>🥑 หมู่ที่ 3: ไขมันดี (Healthy Fats)</h2>
           <p class="fact">"กินไขมันไม่ได้แปลว่าจะอ้วน! ไขมันดีช่วยดูดซึมวิตามินและปรับสมดุลฮอร์โมนนะ"</p>
@@ -74,13 +75,10 @@
       </section>
 
       <section class="screen category-section vitamin-section">
-        
         <video autoplay loop muted playsinline class="bg-video">
           <source src="@/assets/images/vitamin.mp4" type="video/mp4" />
         </video>
-
         <div class="overlay"></div>
-        
         <div class="content full-screen-content">
           <h2>🥦 หมู่ที่ 4: วิตามินและแร่ธาตุ</h2>
           <p class="fact">"ผู้ช่วยส่วนตัวเรื่องระบบขับถ่าย เสริมภูมิคุ้มกัน และทำให้ผิวพรรณสดใสเปล่งปลั่ง"</p>
@@ -90,7 +88,9 @@
             <span>🥬 ผักใบเขียว</span>
             <span>🍊 ส้ม</span>
           </div>
-          <button @click="goTo('/register')" class="cta-button final-cta">พร้อมจะดูแลสุขภาพหรือยัง? ไปลุยกัน!</button>
+          <button @click="isLoggedIn ? goTo('/dashboard') : goTo('/register')" class="cta-button final-cta">
+            {{ isLoggedIn ? 'กลับไปที่แดชบอร์ด' : 'พร้อมจะดูแลสุขภาพหรือยัง? ไปลุยกัน!' }}
+          </button>
         </div>
       </section>
 
@@ -99,9 +99,19 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const isLoggedIn = ref(false)
+
+// 🌟 ตรวจสอบว่าผู้ใช้ล็อกอินอยู่หรือไม่เมื่อโหลดหน้าเว็บ
+onMounted(() => {
+  const user = localStorage.getItem('user')
+  if (user) {
+    isLoggedIn.value = true
+  }
+})
 
 const goTo = (path) => {
   router.push(path)
