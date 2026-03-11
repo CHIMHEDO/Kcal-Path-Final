@@ -1,42 +1,157 @@
 <template>
-  <div class="login-wrapper">
-    <div class="overlay"></div>
+  <div class="page">
 
-    <div class="login-container glass-card">
-      <h1 class="premium-title">Kcal-Path 🍽️</h1>
-      <h2 class="subtitle">เข้าสู่ระบบเพื่อจัดการสุขภาพ</h2>
-      
-      <div class="form-group">
-        <label>ชื่อผู้ใช้ (Username)</label>
-        <input 
-          type="text" 
-          v-model="username" 
-          class="glass-input" 
-          placeholder="กรอกชื่อผู้ใช้" 
-          @keyup.enter="login"
-        >
-      </div>
-      
-      <div class="form-group">
-        <label>รหัสผ่าน (Password)</label>
-        <input 
-          type="password" 
-          v-model="password" 
-          class="glass-input" 
-          placeholder="กรอกรหัสผ่าน" 
-          @keyup.enter="login"
-        >
+    <!-- grid bg -->
+    <div class="grid-bg"></div>
+    <div class="glow-top"></div>
+
+    <!-- NAV -->
+    <nav class="nav">
+      <a class="logo" @click="goTo('/')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+            stroke="#30d158" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        KcalPath
+      </a>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- LEFT — branding -->
+      <div class="left">
+        <div class="left-inner">
+          <div class="eyebrow">
+            <span class="ew-dot"></span>
+            ยินดีต้อนรับกลับ
+          </div>
+          <h1 class="big-title">
+            ดูแล<br><em>ตัวเอง</em><br>ทุกวัน
+          </h1>
+          <p class="left-sub">
+            บันทึกมื้ออาหาร ติดตามสารอาหาร<br>
+            และวางแผนสุขภาพด้วยข้อมูลอาหารไทย
+          </p>
+
+          <!-- stat pills -->
+          <div class="stat-pills">
+            <div class="sp" v-for="s in stats" :key="s.label">
+              <div class="sp-n" :style="`color:${s.color}`">{{ s.val }}</div>
+              <div class="sp-l">{{ s.label }}</div>
+            </div>
+          </div>
+
+          <!-- ambient number -->
+          <div class="ambient">12K</div>
+        </div>
       </div>
 
-      <button @click="login" class="premium-btn">เข้าสู่ระบบ</button>
-      
-      <div class="divider"></div>
-      
-      <p class="register-link">
-        ยังไม่มีบัญชีใช่ไหม? 
-        <button @click="goToRegister" class="btn-link text-accent">สมัครสมาชิกเลย</button>
-      </p>
-    </div>
+      <!-- RIGHT — form card -->
+      <div class="right">
+        <div class="card" :class="{ shake: shaking }">
+
+          <!-- header -->
+          <div class="card-head">
+            <div class="card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                  stroke="#30d158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h2 class="card-title">เข้าสู่ระบบ</h2>
+            <p class="card-sub">KcalPath — แพลตฟอร์มโภชนาการสำหรับคนไทย</p>
+          </div>
+
+          <!-- error alert -->
+          <transition name="fade">
+            <div class="alert-err" v-if="errorMsg">
+              <span class="alert-icon">!</span>
+              {{ errorMsg }}
+            </div>
+          </transition>
+
+          <!-- form -->
+          <div class="form">
+
+            <div class="field">
+              <label>ชื่อผู้ใช้</label>
+              <div class="input-wrap" :class="{ focused: focusedField === 'user', error: errorMsg }">
+                <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <input
+                  type="text"
+                  v-model="username"
+                  placeholder="กรอกชื่อผู้ใช้"
+                  @keyup.enter="login"
+                  @focus="focusedField = 'user'"
+                  @blur="focusedField = ''"
+                  autocomplete="username"
+                  :disabled="loading"
+                />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>รหัสผ่าน</label>
+              <div class="input-wrap" :class="{ focused: focusedField === 'pass', error: errorMsg }">
+                <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <input
+                  :type="showPass ? 'text' : 'password'"
+                  v-model="password"
+                  placeholder="กรอกรหัสผ่าน"
+                  @keyup.enter="login"
+                  @focus="focusedField = 'pass'"
+                  @blur="focusedField = ''"
+                  autocomplete="current-password"
+                  :disabled="loading"
+                />
+                <button class="eye-btn" @click="showPass = !showPass" tabindex="-1">
+                  <!-- eye open -->
+                  <svg v-if="!showPass" width="15" height="15" viewBox="0 0 24 24" fill="none">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  <!-- eye off -->
+                  <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- submit -->
+            <button class="btn-submit" @click="login" :disabled="loading">
+              <span v-if="!loading">เข้าสู่ระบบ</span>
+              <span v-else class="loading-dots">
+                <span></span><span></span><span></span>
+              </span>
+            </button>
+
+            <div class="divider-line">
+              <span></span>
+              <p>หรือ</p>
+              <span></span>
+            </div>
+
+            <p class="register-row">
+              ยังไม่มีบัญชี?
+              <button class="link-btn" @click="goTo('/register')">
+                สมัครสมาชิกฟรี →
+              </button>
+            </p>
+
+          </div>
+        </div>
+      </div>
+
+    </main>
   </div>
 </template>
 
@@ -44,203 +159,324 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-const username = ref('')
-const password = ref('')
 const router = useRouter()
+const goTo = (path) => router.push(path)
+
+const username     = ref('')
+const password     = ref('')
+const showPass     = ref(false)
+const loading      = ref(false)
+const errorMsg     = ref('')
+const shaking      = ref(false)
+const focusedField = ref('')
+
+const stats = [
+  { val: '12K+', label: 'รายการอาหาร', color: '#30d158' },
+  { val: '98%',  label: 'ความพึงพอใจ', color: '#0a84ff' },
+  { val: '50K+', label: 'ผู้ใช้งาน',  color: '#ff9f0a' },
+]
+
+const triggerShake = () => {
+  shaking.value = true
+  setTimeout(() => shaking.value = false, 500)
+}
 
 const login = async () => {
+  errorMsg.value = ''
+
   if (!username.value || !password.value) {
-    alert('กรุณากรอกชื่อผู้ใช้และรหัสผ่านให้ครบถ้วน');
-    return;
+    errorMsg.value = 'กรุณากรอกชื่อผู้ใช้และรหัสผ่านให้ครบถ้วน'
+    triggerShake()
+    return
   }
 
-  // ล้างข้อมูลเก่าทิ้งก่อน ป้องกันการจำค่าจากครั้งที่แล้ว
-  localStorage.clear();
+  loading.value = true
+  localStorage.clear()
 
   try {
-    // 🌟 แก้ไข: เติม /api/ นำหน้า URL ให้ตรงกับ Backend (Node.js) ใหม่
     const response = await fetch('http://localhost:3000/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: username.value,
-        password: password.value
-      })
-    });
+      body: JSON.stringify({ username: username.value, password: password.value })
+    })
 
-    const data = await response.json();
+    const data = await response.json()
 
     if (response.ok) {
-      // ✅ ล็อกอินผ่าน (Server ส่งสถานะ 200)
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userId', data.user.id); 
-      localStorage.setItem('username', data.user.username);
-      
-      alert('ยินดีต้อนรับครับ!');
-      router.push('/dashboard'); // พาไปหน้า Dashboard
+      localStorage.setItem('isLoggedIn', 'true')
+      localStorage.setItem('userId',   data.user.id)
+      localStorage.setItem('username', data.user.username)
+      router.push('/dashboard')
     } else {
-      // ❌ ล็อกอินไม่ผ่าน (เช่น รหัสผิด, ไม่มีชื่อผู้ใช้)
-      password.value = ''; // ล้างช่องรหัสผ่านให้พิมพ์ใหม่
-      alert(data.error || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+      password.value = ''
+      errorMsg.value = data.error || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'
+      triggerShake()
     }
-  } catch (error) {
-    console.error("Login Error:", error);
-    alert('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ โปรดเช็คว่ารัน Backend ไว้หรือยัง');
+  } catch {
+    errorMsg.value = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่อีกครั้ง'
+    triggerShake()
+  } finally {
+    loading.value = false
   }
-};
-
-const goToRegister = () => {
-  router.push('/register');
-};
+}
 </script>
 
 <style scoped>
-/* 🎨 --- พื้นหลัง --- */
-.login-wrapper {
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@200;300;400;700;900&family=Noto+Sans+Thai:wght@200;300;400;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.page {
+  font-family: 'Noto Sans Thai', 'Prompt', sans-serif;
+  background: #000;
+  color: #f5f5f7;
   min-height: 100vh;
   position: relative;
-  font-family: 'Prompt', sans-serif;
-  color: #f8fafc;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 40px 20px;
-  box-sizing: border-box;
-  overflow-x: hidden;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-.gif-bg {
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  object-fit: cover; z-index: 0; opacity: 0.6; 
+/* ── backgrounds ── */
+.grid-bg {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 20%, transparent 100%);
+}
+.glow-top {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 60% 35% at 50% 0%, rgba(48,209,88,.09) 0%, transparent 70%);
 }
 
-.overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background-color: rgba(15, 23, 42, 0.4); 
-  z-index: 1;
+/* ── NAV ── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 99;
+  height: 52px; display: flex; align-items: center; padding: 0 32px;
+  background: rgba(0,0,0,.7); backdrop-filter: blur(28px);
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.logo {
+  font-family: 'Prompt', sans-serif; font-weight: 700; font-size: .95rem;
+  color: #f5f5f7; display: flex; align-items: center; gap: 7px;
+  letter-spacing: .02em; cursor: pointer; text-decoration: none;
 }
 
-/* 🎨 --- คอนเทนเนอร์หลัก (ดีไซน์โปร่งแสงพรีเมียม) --- */
-.login-container {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 420px;
-  text-align: center;
+/* ── MAIN LAYOUT ── */
+.main {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding-top: 52px;
 }
 
-.glass-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 24px;
-  padding: 40px 35px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.05);
+/* ── LEFT ── */
+.left {
+  display: flex; align-items: center; justify-content: center;
+  padding: 60px 48px 60px 64px;
+  position: relative; overflow: hidden;
+}
+.left-inner { position: relative; z-index: 2; max-width: 440px; }
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .75rem; font-weight: 600; color: #30d158;
+  letter-spacing: .1em; text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.ew-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #30d158; box-shadow: 0 0 8px #30d158; flex-shrink: 0;
 }
 
-.premium-title {
-  margin-top: 0;
-  color: #ffffff;
-  font-weight: 400;
-  letter-spacing: 1px;
-  font-size: 2em;
-  margin-bottom: 5px;
+.big-title {
+  font-family: 'Prompt', sans-serif; font-weight: 700;
+  font-size: clamp(3.5rem, 7vw, 7rem);
+  line-height: .96; letter-spacing: -.05em;
+  color: #f5f5f7; margin-bottom: 24px;
+}
+.big-title em {
+  font-style: normal;
+  background: linear-gradient(135deg, #30d158 0%, #34aadc 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 
-.subtitle { 
-  color: #cbd5e1; 
-  margin-bottom: 30px; 
-  font-weight: 300; 
-  font-size: 1.1em;
+.left-sub {
+  font-size: clamp(.88rem, 1.3vw, 1.05rem); font-weight: 300;
+  color: #6e6e73; line-height: 1.8; margin-bottom: 40px;
 }
 
-.text-accent { color: #d4af37; font-weight: 400; }
+/* stat pills */
+.stat-pills { display: flex; gap: 10px; flex-wrap: wrap; }
+.sp {
+  display: flex; flex-direction: column; align-items: center;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px; padding: 12px 20px; gap: 3px;
+  backdrop-filter: blur(12px);
+}
+.sp-n {
+  font-family: 'Prompt', sans-serif; font-size: 1.3rem;
+  font-weight: 700; line-height: 1; letter-spacing: -.02em;
+}
+.sp-l { font-size: .6rem; color: #6e6e73; font-weight: 300; }
 
-/* 🎨 --- ส่วนของฟอร์ม --- */
-.form-group { 
-  margin-bottom: 20px; 
-  text-align: left;
+/* ambient number */
+.ambient {
+  position: absolute; right: -8%; bottom: -8%; pointer-events: none;
+  font-family: 'Prompt', sans-serif; font-weight: 900;
+  font-size: clamp(8rem, 20vw, 20rem); line-height: 1;
+  letter-spacing: -.05em; color: rgba(255,255,255,.025); user-select: none; z-index: 1;
 }
 
-label { 
-  display: block; 
-  font-weight: 300; 
-  margin-bottom: 8px; 
-  color: #e2e8f0; 
-  font-size: 0.95em; 
+/* ── RIGHT ── */
+.right {
+  display: flex; align-items: center; justify-content: center;
+  padding: 60px 64px 60px 48px;
+  border-left: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.012);
 }
 
-/* 🎨 --- Input Fields แบบหรูหรา --- */
-.glass-input {
-  width: 100%;
-  padding: 14px 15px;
-  box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  border-radius: 12px;
-  font-size: 1.05em;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 300;
-  outline: none;
-  transition: all 0.3s ease;
+/* ── CARD ── */
+.card {
+  width: 100%; max-width: 420px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 24px; padding: 40px 36px;
+  backdrop-filter: blur(32px);
+  box-shadow: 0 40px 80px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.04);
+}
+.card.shake { animation: shake .45s cubic-bezier(.36,.07,.19,.97); }
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-6px)}
+  80%{transform:translateX(6px)}
 }
 
-.glass-input:focus {
-  border-color: #d4af37;
-  background: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+/* card header */
+.card-head { text-align: center; margin-bottom: 28px; }
+.card-icon {
+  width: 48px; height: 48px; border-radius: 14px; margin: 0 auto 14px;
+  background: rgba(48,209,88,.08); border: 1px solid rgba(48,209,88,.18);
+  display: flex; align-items: center; justify-content: center;
 }
-
-.glass-input::placeholder { color: #94a3b8; font-weight: 300; }
-
-/* 🎨 --- ปุ่มกดพรีเมียม (สีทอง) --- */
-.premium-btn {
-  width: 100%;
-  padding: 15px;
-  margin-top: 15px;
-  background: linear-gradient(135deg, #d4af37, #b58d22);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  font-size: 1.15em;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.4s ease;
-  font-family: 'Prompt', sans-serif;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+.card-title {
+  font-family: 'Prompt', sans-serif; font-weight: 700;
+  font-size: 1.55rem; letter-spacing: -.025em; color: #f5f5f7; margin-bottom: 6px;
 }
+.card-sub { font-size: .78rem; font-weight: 300; color: #6e6e73; }
 
-.premium-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
-  background: linear-gradient(135deg, #e6c55d, #c59b27);
+/* error alert */
+.alert-err {
+  display: flex; align-items: flex-start; gap: 9px;
+  background: rgba(255,69,58,.08); border: 1px solid rgba(255,69,58,.2);
+  border-radius: 10px; padding: 11px 14px; margin-bottom: 18px;
+  font-size: .8rem; color: #ff453a; line-height: 1.5;
 }
-
-.divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-  margin: 30px 0 20px;
+.alert-icon {
+  width: 18px; height: 18px; border-radius: 50%; background: rgba(255,69,58,.2);
+  color: #ff453a; font-size: .7rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
 }
+.fade-enter-active, .fade-leave-active { transition: all .25s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-6px); }
 
-.register-link { 
-  color: #cbd5e1; 
-  font-size: 0.95em; 
-  font-weight: 300; 
-  margin: 0;
+/* form */
+.form { display: flex; flex-direction: column; gap: 0; }
+.field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+label { font-size: .78rem; font-weight: 400; color: #a1a1a6; letter-spacing: .01em; }
+
+/* input */
+.input-wrap {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px; padding: 0 14px; height: 48px;
+  transition: all .22s;
 }
-
-.btn-link {
-  background: none; border: none; font-size: 1em;
-  text-decoration: none; cursor: pointer;
-  font-family: 'Prompt', sans-serif; transition: 0.3s;
-  font-weight: 400;
-  padding: 0;
+.input-wrap.focused {
+  border-color: rgba(48,209,88,.45);
+  background: rgba(48,209,88,.04);
+  box-shadow: 0 0 0 3px rgba(48,209,88,.08);
 }
-.btn-link:hover { color: #f3e5ab; text-decoration: underline; }
+.input-wrap.error { border-color: rgba(255,69,58,.3); }
+.input-wrap.error.focused {
+  border-color: rgba(255,69,58,.5);
+  box-shadow: 0 0 0 3px rgba(255,69,58,.08);
+}
+.input-icon { color: #6e6e73; flex-shrink: 0; transition: color .22s; }
+.input-wrap.focused .input-icon { color: #30d158; }
 
-@media (max-width: 600px) {
-  .glass-card { padding: 30px 20px; }
+input {
+  flex: 1; background: none; border: none; outline: none;
+  font-family: 'Noto Sans Thai', 'Prompt', sans-serif;
+  font-size: .92rem; font-weight: 300; color: #f5f5f7;
+  min-width: 0;
+}
+input::placeholder { color: #4a4a4f; }
+input:disabled { opacity: .5; cursor: not-allowed; }
+
+.eye-btn {
+  background: none; border: none; cursor: pointer; padding: 0;
+  color: #6e6e73; transition: color .2s; display: flex; align-items: center; flex-shrink: 0;
+}
+.eye-btn:hover { color: #a1a1a6; }
+
+/* submit button */
+.btn-submit {
+  width: 100%; height: 50px; margin-top: 6px; margin-bottom: 20px;
+  background: #30d158; color: #000;
+  border: none; border-radius: 12px;
+  font-family: 'Prompt', sans-serif; font-size: .98rem; font-weight: 700;
+  cursor: pointer; letter-spacing: .01em; transition: all .22s;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-submit:hover:not(:disabled) { background: #28b84c; transform: scale(.99); }
+.btn-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+/* loading dots */
+.loading-dots {
+  display: flex; gap: 5px; align-items: center;
+}
+.loading-dots span {
+  width: 6px; height: 6px; border-radius: 50%; background: #000;
+  animation: dot 1.2s ease-in-out infinite;
+}
+.loading-dots span:nth-child(2) { animation-delay: .2s; }
+.loading-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes dot { 0%,80%,100%{transform:scale(.6);opacity:.4} 40%{transform:scale(1);opacity:1} }
+
+/* divider */
+.divider-line {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+}
+.divider-line span {
+  flex: 1; height: 1px; background: rgba(255,255,255,.08);
+}
+.divider-line p { font-size: .72rem; color: #4a4a4f; white-space: nowrap; }
+
+/* register row */
+.register-row {
+  text-align: center; font-size: .82rem; font-weight: 300; color: #6e6e73;
+}
+.link-btn {
+  background: none; border: none; cursor: pointer;
+  font-family: inherit; font-size: inherit; font-weight: 500;
+  color: #30d158; transition: opacity .2s; padding: 0; margin-left: 4px;
+}
+.link-btn:hover { opacity: .7; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 860px) {
+  .main { grid-template-columns: 1fr; }
+  .left { display: none; }
+  .right {
+    padding: 32px 24px; border-left: none;
+    min-height: calc(100vh - 52px);
+    background: none;
+  }
+  .card { padding: 32px 24px; }
 }
 </style>
