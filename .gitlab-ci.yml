@@ -9,34 +9,47 @@ variables:
   NODE_IMAGE: node:20-slim
 
 # 3. ขั้นตอนการประกอบร่าง (Build)
+# แก้ไขในไฟล์ .gitlab-ci.yml ของคุณ
+
 build_vue_app:
   stage: build
   image: $NODE_IMAGE
   script:
+    - cd vue-frontend       # <--- เพิ่มบรรทัดนี้เพื่อเข้าไปในโฟลเดอร์โปรเจกต์
     - echo "เริ่มติดตั้ง Library..."
     - npm install
     - echo "เริ่ม Build โปรเจกต์..."
     - npm run build
   artifacts:
     paths:
-      - dist/ # เก็บโฟลเดอร์ที่ Build เสร็จแล้วไว้ส่งต่อ
+      - vue-frontend/dist/  # <--- แก้ที่อยู่ตรงนี้ด้วยให้ตรงกัน
     expire_in: 1 week
 
-# 4. ขั้นตอนการทดสอบ (Test)
 test_vue_app:
   stage: test
   image: $NODE_IMAGE
   script:
+    - cd vue-frontend       # <--- เพิ่มตรงนี้ด้วย
     - npm install
-    - echo "กำลังตรวจสอบคุณภาพโค้ด (Linting)..."
-    - npm run lint # ถ้าคุณตั้งค่า ESLint ไว้
-    - echo "กำลังรัน Unit Test..."
+    - echo "กำลังตรวจสอบคุณภาพโค้ด..."
+    - npm run lint
     # - npm run test:unit # (เปิดคอมเมนต์นี้ถ้ามี Unit Test)
 
 # 5. ขั้นตอนการนำไปใช้งาน (Deploy) - ตัวอย่างแบบง่าย
-deploy_preview:
+# ---------- DEPLOY Vercel ----------
+deploy-vercel:
   stage: deploy
+  image: node:20
+  variables:
+    TOKEN: $VERCEL_TOKEN
+    VERCEL_ORG_ID: $VERCEL_ORG_ID_X
+    VERCEL_PROJECT_ID: $VERCEL_PROJECT_ID_X
   script:
-    - echo "นำไฟล์ในโฟลเดอร์ /dist ไปวางที่ Server..."
+    - npm install --global vercel
+    # เดินเข้าโฟลเดอร์โปรเจกต์ก่อนสั่งงาน Vercel
+    - cd vue-frontend 
+    - vercel pull --yes --environment=production --token="$TOKEN"
+    - vercel build --prod --token="$TOKEN"
+    - vercel deploy --prebuilt --prod --token="$TOKEN"
   only:
     - main
