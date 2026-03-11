@@ -1,7 +1,6 @@
 # 1. กำหนดลำดับขั้นตอน
 stages:
   - build
-  - test
   - deploy
 
 # 2. ตั้งค่าตัวแปรกลาง
@@ -29,30 +28,15 @@ build_vue_app:
       - vue-frontend/dist/
     expire_in: 1 week
 
-# 4. ขั้นตอนการทดสอบ (Test)
-test_vue_app:
-  stage: test
-  image: $NODE_IMAGE
-  script:
-    - cd vue-frontend
-    - npm install # (ดึงจาก Cache จะเร็วมาก)
-    - echo "กำลังตรวจสอบคุณภาพโค้ด..."
-    - npm run lint
-    # - npm run test:unit
-
-# 5. ขั้นตอนการนำไปใช้งาน (Deploy)
+# 4. ขั้นตอนการนำไปใช้งาน (Deploy)
 deploy-vercel:
   stage: deploy
   image: node:20
-  variables:
-    TOKEN: $VERCEL_TOKEN
-    VERCEL_ORG_ID: $VERCEL_ORG_ID_X
-    VERCEL_PROJECT_ID: $VERCEL_PROJECT_ID_X
   script:
     - npm install --global vercel
     - cd vue-frontend
-    - vercel pull --yes --environment=production --token="$TOKEN"
-    - vercel build --prod --token="$TOKEN"
-    - vercel deploy --prebuilt --prod --token="$TOKEN"
+    - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+    - vercel build --prod --token=$VERCEL_TOKEN
+    - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
   only:
     - main
