@@ -268,8 +268,8 @@ async function fetchHistoryData() {
   loading.value = true
   try {
     const [userRes, summaryRes] = await Promise.all([
-      fetch(`http://localhost:3000/api/users/${userId}`),
-      fetch(`http://localhost:3000/api/daily-summary/${userId}/${selectedDate.value}`)
+      fetch(`/api/users/${userId}`),
+      fetch(`/api/daily-summary/${userId}/${selectedDate.value}`)
     ])
     if (userRes.ok) {
       const u = await userRes.json()

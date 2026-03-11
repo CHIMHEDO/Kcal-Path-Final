@@ -334,7 +334,7 @@ function clearSelection() {
 
 async function fetchFoods() {
   try {
-    const r = await fetch('http://localhost:3000/api/foods')
+    const r = await fetch('/api/foods')
     if (r.ok) foods.value = await r.json()
   } catch (e) { console.error(e) }
 }
@@ -350,7 +350,7 @@ async function submitFoodLog() {
       showToast('กรุณากรอกชื่ออาหารและแคลอรี่ให้ครบ', 'err'); return
     }
     try {
-      const r = await fetch('http://localhost:3000/api/foods', {
+      const r = await fetch('/api/foods', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(customFood.value)
@@ -365,7 +365,7 @@ async function submitFoodLog() {
 
   submitting.value = true
   try {
-    const r = await fetch('http://localhost:3000/api/food-logs', {
+    const r = await fetch('/api/food-logs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
