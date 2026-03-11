@@ -301,7 +301,7 @@ async function fetchAll() {
   if (!userId) { router.push('/login'); return }
 
   try {
-    const uRes = await fetch(`http://localhost:3000/api/users/${userId}`)
+    const uRes = await fetch(`/api/users/${userId}`)
     if (uRes.ok) {
       const u = await uRes.json()
       userName.value   = u.username
@@ -317,7 +317,7 @@ async function fetchAll() {
       timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit'
     }).format(new Date())
 
-    const sRes = await fetch(`http://localhost:3000/api/daily-summary/${userId}/${today}`)
+    const sRes = await fetch(`/api/daily-summary/${userId}/${today}`)
     if (sRes.ok) {
       const s = await sRes.json()
       totalCalories.value = s.summary.total_calories || 0
@@ -336,7 +336,7 @@ async function fetchAll() {
 async function deleteLog(id) {
   if (!confirm('ลบรายการนี้?')) return
   try {
-    const r = await fetch(`http://localhost:3000/api/food-logs/${id}`, { method: 'DELETE' })
+    const r = await fetch(`/api/food-logs/${id}`, { method: 'DELETE' })
     if (r.ok) fetchAll()
   } catch (e) { console.error(e) }
 }

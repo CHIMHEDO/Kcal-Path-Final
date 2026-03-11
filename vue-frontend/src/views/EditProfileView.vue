@@ -266,7 +266,7 @@ onMounted(async () => {
   const userId = localStorage.getItem('userId')
   if (!userId) { router.push('/login'); return }
   try {
-    const res = await fetch(`http://localhost:3000/api/users/${userId}`)
+    const res = await fetch(`/api/users/${userId}`)
     if (res.ok) { form.value = { ...form.value, ...await res.json() }; calcPreview() }
   } catch (e) { console.error(e) }
 })
@@ -275,7 +275,7 @@ async function updateProfile() {
   const userId = localStorage.getItem('userId')
   saving.value = true
   try {
-    const res = await fetch(`http://localhost:3000/api/users/${userId}`, {
+    const res = await fetch(`/api/users/${userId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form.value)
