@@ -1,0 +1,42 @@
+# 1. กำหนดลำดับขั้นตอน
+stages:
+  - build
+  - test
+  - deploy
+
+# 2. ตั้งค่าตัวแปรกลาง (ถ้ามี)
+variables:
+  NODE_IMAGE: node:20-slim
+
+# 3. ขั้นตอนการประกอบร่าง (Build)
+build_vue_app:
+  stage: build
+  image: $NODE_IMAGE
+  script:
+    - echo "เริ่มติดตั้ง Library..."
+    - npm install
+    - echo "เริ่ม Build โปรเจกต์..."
+    - npm run build
+  artifacts:
+    paths:
+      - dist/ # เก็บโฟลเดอร์ที่ Build เสร็จแล้วไว้ส่งต่อ
+    expire_in: 1 week
+
+# 4. ขั้นตอนการทดสอบ (Test)
+test_vue_app:
+  stage: test
+  image: $NODE_IMAGE
+  script:
+    - npm install
+    - echo "กำลังตรวจสอบคุณภาพโค้ด (Linting)..."
+    - npm run lint # ถ้าคุณตั้งค่า ESLint ไว้
+    - echo "กำลังรัน Unit Test..."
+    # - npm run test:unit # (เปิดคอมเมนต์นี้ถ้ามี Unit Test)
+
+# 5. ขั้นตอนการนำไปใช้งาน (Deploy) - ตัวอย่างแบบง่าย
+deploy_preview:
+  stage: deploy
+  script:
+    - echo "นำไฟล์ในโฟลเดอร์ /dist ไปวางที่ Server..."
+  only:
+    - main
